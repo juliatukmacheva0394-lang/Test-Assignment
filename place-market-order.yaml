@@ -1,0 +1,213 @@
+openapi: 3.1.0
+info:
+  version: '1.0'
+  title: ORDER
+  summary: ''
+servers:
+  - url: 'http://localhost:3000'
+    description: ''
+paths:
+  /order:
+    post:
+      summary: Create New Order
+      description: API should create users market order and send notification to the user about success creation or an error.
+      operationId: post-order
+      parameters:
+        - name: Authorization
+          in: header
+          description: Token для аутентификации пользователя
+          schema:
+            type: string
+        - name: content-type
+          in: header
+          description: application/json
+          schema:
+            type: string
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                typeId:
+                  type: integer
+                  description: 'id типа заказа из списка, например "market", "limit" and etc.'
+                direction:
+                  description: '"buy" or "sell"'
+                instrumentId:
+                  type: integer
+                  description: 'id валютной пары из списка, например "EUR/USD" and etc.'
+                amount:
+                  type: number
+                  description: объем сделки (количество слотов)
+              required:
+                - typeId
+                - direction
+                - instrumentId
+                - amount
+            examples:
+              Example 1:
+                value:
+                  typeId: 2
+                  direction: buy
+                  instrumentId: 3
+                  amount: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                required:
+                  - error
+                  - message
+              examples:
+                Example 1:
+                  value:
+                    error: Invalid instrumentId
+                    message: The instrument is not available for trading
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                required:
+                  - error
+                  - message
+              examples:
+                Example 1:
+                  value:
+                    error: Unauthorized
+                    message: Bearer token is missing or invalid
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                required:
+                  - error
+                  - message
+              examples:
+                Example 1:
+                  value:
+                    error: KYC required
+                    message: Complete KYC verification to trade
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                required:
+                  - error
+                  - message
+              examples:
+                Example 1:
+                  value:
+                    error: Insufficient balance
+                    message: Not enough funds to open position
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                required:
+                  - error
+                  - message
+              examples:
+                Example 1:
+                  value:
+                    error: Internal Server Error
+                    message: An unexpected error occurred while processing the order. Please try again later.
+      servers:
+        - url: 'http://localhost:3000'
+          description: ''
+components:
+  schemas:
+    Order:
+      type: object
+      title: Order
+      properties:
+        orderId:
+          type: integer
+          description: Unique identifier for the order.
+        typeId:
+          type: integer
+          description: 'id type of order from the list, for example ''market'', ''limit'' and etc'
+        instrumentId:
+          type: integer
+          description: 'id instrument from the list, for example ''EUR/USD'' and etc'
+        amount:
+          type: number
+          description: namber of slots
+        userId:
+          type: integer
+          description: Unique identifier for the user.
+          examples:
+            - '1997-10-31'
+        price:
+          type: number
+        createDate:
+          type: integer
+          description: The date that the order was created.
+        direction:
+          description: 'direction of order: ''buy'' or ''sell'''
+        status:
+          description: '''pending'', ''filled'', ''rejected'''
+      required:
+        - orderId
+        - typeId
+        - instrumentId
+        - amount
+        - userId
+        - price
+        - createDate
+        - direction
+        - status
+      examples:
+        - orderId: 1
+          typeId: 4
+          instrumentId: 2
+          amount: 1
+          userId: 123
+          price: 1.003
+          createDate: 1758193470
+          direction: buy
+          status: filled
+x-internal: false

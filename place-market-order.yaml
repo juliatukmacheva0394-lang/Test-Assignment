@@ -1,30 +1,27 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
   version: '1.0'
   title: ORDER
-  summary: ''
+
 servers:
   - url: 'http://localhost:3000'
-    description: ''
+    description: Local server
+
 paths:
   /order:
     post:
       summary: Create New Order
-      description: API should create users market order and send notification to the user about success creation or an error.
+      description: API creates a user's market order and sends a notification upon success or failure.
       operationId: post-order
       parameters:
         - name: Authorization
           in: header
-          description: Token для аутентификации пользователя
-          schema:
-            type: string
-        - name: content-type
-          in: header
-          description: application/json
+          description: Bearer token for user authentication.
+          required: true
           schema:
             type: string
       requestBody:
-        description: ''
+        required: true
         content:
           application/json:
             schema:
@@ -32,27 +29,28 @@ paths:
               properties:
                 typeId:
                   type: integer
-                  description: 'id типа заказа из списка, например "market", "limit" and etc.'
+                  description: ID of the order type (e.g., market, limit).
                 direction:
-                  description: '"buy" or "sell"'
+                  type: string
+                  enum: [buy, sell]
+                  description: Direction of the order.
                 instrumentId:
                   type: integer
-                  description: 'id валютной пары из списка, например "EUR/USD" and etc.'
+                  description: ID of the trading instrument (e.g., EUR/USD).
                 amount:
                   type: number
-                  description: объем сделки (количество слотов)
+                  description: Volume of the order (number of slots).
               required:
                 - typeId
                 - direction
                 - instrumentId
                 - amount
-            examples:
-              Example 1:
-                value:
-                  typeId: 2
-                  direction: buy
-                  instrumentId: 3
-                  amount: 1
+            example:
+              typeId: 2
+              direction: buy
+              instrumentId: 3
+              amount: 1
+
       responses:
         '200':
           description: OK
@@ -60,6 +58,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
+
         '400':
           description: Bad Request
           content:
@@ -71,14 +70,11 @@ paths:
                     type: string
                   message:
                     type: string
-                required:
-                  - error
-                  - message
-              examples:
-                Example 1:
-                  value:
-                    error: Invalid instrumentId
-                    message: The instrument is not available for trading
+                required: [error, message]
+              example:
+                error: Invalid instrumentId
+                message: The instrument is not available for trading
+
         '401':
           description: Unauthorized
           content:
@@ -90,14 +86,11 @@ paths:
                     type: string
                   message:
                     type: string
-                required:
-                  - error
-                  - message
-              examples:
-                Example 1:
-                  value:
-                    error: Unauthorized
-                    message: Bearer token is missing or invalid
+                required: [error, message]
+              example:
+                error: Unauthorized
+                message: Bearer token is missing or invalid
+
         '403':
           description: Forbidden
           content:
@@ -109,14 +102,11 @@ paths:
                     type: string
                   message:
                     type: string
-                required:
-                  - error
-                  - message
-              examples:
-                Example 1:
-                  value:
-                    error: KYC required
-                    message: Complete KYC verification to trade
+                required: [error, message]
+              example:
+                error: KYC required
+                message: Complete KYC verification to trade
+
         '409':
           description: Conflict
           content:
@@ -128,14 +118,11 @@ paths:
                     type: string
                   message:
                     type: string
-                required:
-                  - error
-                  - message
-              examples:
-                Example 1:
-                  value:
-                    error: Insufficient balance
-                    message: Not enough funds to open position
+                required: [error, message]
+              example:
+                error: Insufficient balance
+                message: Not enough funds to open position
+
         '500':
           description: Internal Server Error
           content:
@@ -147,17 +134,11 @@ paths:
                     type: string
                   message:
                     type: string
-                required:
-                  - error
-                  - message
-              examples:
-                Example 1:
-                  value:
-                    error: Internal Server Error
-                    message: An unexpected error occurred while processing the order. Please try again later.
-      servers:
-        - url: 'http://localhost:3000'
-          description: ''
+                required: [error, message]
+              example:
+                error: Internal Server Error
+                message: An unexpected error occurred while processing the order. Please try again later.
+
 components:
   schemas:
     Order:
@@ -169,27 +150,30 @@ components:
           description: Unique identifier for the order.
         typeId:
           type: integer
-          description: 'id type of order from the list, for example ''market'', ''limit'' and etc'
+          description: ID of the order type (e.g., market, limit).
         instrumentId:
           type: integer
-          description: 'id instrument from the list, for example ''EUR/USD'' and etc'
+          description: ID of the trading instrument (e.g., EUR/USD).
         amount:
           type: number
-          description: namber of slots
+          description: Number of slots in the order.
         userId:
           type: integer
           description: Unique identifier for the user.
-          examples:
-            - '1997-10-31'
         price:
           type: number
+          description: Price at which the order was executed.
         createDate:
           type: integer
-          description: The date that the order was created.
+          description: UNIX timestamp when the order was created.
         direction:
-          description: 'direction of order: ''buy'' or ''sell'''
+          type: string
+          enum: [buy, sell]
+          description: Direction of the order.
         status:
-          description: '''pending'', ''filled'', ''rejected'''
+          type: string
+          enum: [pending, filled, rejected]
+          description: Current status of the order.
       required:
         - orderId
         - typeId
@@ -200,14 +184,15 @@ components:
         - createDate
         - direction
         - status
-      examples:
-        - orderId: 1
-          typeId: 4
-          instrumentId: 2
-          amount: 1
-          userId: 123
-          price: 1.003
-          createDate: 1758193470
-          direction: buy
-          status: filled
+      example:
+        orderId: 1
+        typeId: 4
+        instrumentId: 2
+        amount: 1
+        userId: 123
+        price: 1.003
+        createDate: 1758193470
+        direction: buy
+        status: filled
+
 x-internal: false
